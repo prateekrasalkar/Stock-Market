@@ -6,7 +6,7 @@ require("dotenv").config({ path: path.join(__dirname, "..", "..", ".env") });
 const pool = require("./db");
 
 const app = express();
-const port = Number(process.env.BACKEND_PORT || 4000);
+const PORT = process.env.PORT || 4000;
 const stockApiKey = process.env.GROWW_ACCESS_TOKEN || process.env.STOCK_API_KEY || "";
 const stockApiProvider = (process.env.STOCK_API_PROVIDER || "groww").toLowerCase();
 const stockExchange = process.env.STOCK_EXCHANGE || "NSE";
@@ -348,11 +348,11 @@ async function fetchMoneycontrolQuote(symbol, includeError = false) {
     if (!response.ok || payload.code !== "200" || !data?.pricecurrent) {
       return includeError
         ? {
-            error: "Moneycontrol did not return a usable live quote",
-            httpStatus: response.status,
-            request: { symbol, sc_id: instrument.scId },
-            response: payload,
-          }
+          error: "Moneycontrol did not return a usable live quote",
+          httpStatus: response.status,
+          request: { symbol, sc_id: instrument.scId },
+          response: payload,
+        }
         : null;
     }
 
@@ -380,10 +380,10 @@ async function fetchMoneycontrolQuote(symbol, includeError = false) {
   } catch (error) {
     return includeError
       ? {
-          error: "Moneycontrol request failed",
-          request: { symbol, sc_id: instrument.scId },
-          message: error.message,
-        }
+        error: "Moneycontrol request failed",
+        request: { symbol, sc_id: instrument.scId },
+        message: error.message,
+      }
       : null;
   }
 }
@@ -412,15 +412,15 @@ async function fetchGrowwQuote(symbol, includeError = false) {
   if (!response.ok || data.status !== "SUCCESS" || !data.payload) {
     return includeError
       ? {
-          error: "Groww did not return a successful live quote",
-          httpStatus: response.status,
-          request: {
-            exchange: stockExchange,
-            segment: stockSegment,
-            trading_symbol: symbol,
-          },
-          response: data,
-        }
+        error: "Groww did not return a successful live quote",
+        httpStatus: response.status,
+        request: {
+          exchange: stockExchange,
+          segment: stockSegment,
+          trading_symbol: symbol,
+        },
+        response: data,
+      }
       : null;
   }
 
@@ -486,10 +486,10 @@ async function searchYahooSymbols(query) {
     const directQuote =
       /^[A-Z0-9&.-]+$/.test(exactSymbol)
         ? await fetchFirstYahooQuote(
-            exactSymbol.includes(".")
-              ? [exactSymbol]
-              : [exactSymbol, `${exactSymbol}${yahooSymbolSuffix}`, `${exactSymbol}.BO`]
-          )
+          exactSymbol.includes(".")
+            ? [exactSymbol]
+            : [exactSymbol, `${exactSymbol}${yahooSymbolSuffix}`, `${exactSymbol}.BO`]
+        )
         : null;
     const queryVariants = [
       normalized,
@@ -587,11 +587,11 @@ async function fetchYahooQuote(symbol, includeError = false) {
     if (!response.ok || !meta?.regularMarketPrice) {
       return includeError
         ? {
-            error: "Yahoo Finance did not return a usable quote",
-            httpStatus: response.status,
-            request: { yahoo_symbol: yahooSymbol },
-            response: data,
-          }
+          error: "Yahoo Finance did not return a usable quote",
+          httpStatus: response.status,
+          request: { yahoo_symbol: yahooSymbol },
+          response: data,
+        }
         : null;
     }
 
@@ -625,10 +625,10 @@ async function fetchYahooQuote(symbol, includeError = false) {
   } catch (error) {
     return includeError
       ? {
-          error: "Yahoo Finance request failed",
-          request: { yahoo_symbol: yahooSymbol },
-          message: error.message,
-        }
+        error: "Yahoo Finance request failed",
+        request: { yahoo_symbol: yahooSymbol },
+        message: error.message,
+      }
       : null;
   }
 }
@@ -993,9 +993,9 @@ function buildMarketSummary(overview, ranking, alerts) {
     strongest_stock: strongest,
     most_volatile_stock: mostVolatile
       ? {
-          symbol: mostVolatile.symbol,
-          volatility: Number(mostVolatile.volatility || 0),
-        }
+        symbol: mostVolatile.symbol,
+        volatility: Number(mostVolatile.volatility || 0),
+      }
       : null,
     active_alerts: alerts.length,
   };
@@ -1146,6 +1146,6 @@ app.get("/api/stocks/:symbol", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Backend API listening on http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Backend API listening on port ${PORT}`);
 });
