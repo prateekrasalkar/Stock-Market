@@ -134,6 +134,29 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
+function getErrorDetails(error) {
+  if (error instanceof Error) {
+    return {
+      message: error.message || error.name || "Unknown error",
+      name: error.name,
+      stack: error.stack,
+      code: error.code,
+      detail: error.detail,
+    };
+  }
+
+  if (error && typeof error === "object") {
+    return {
+      message: error.message || JSON.stringify(error),
+      raw: error,
+    };
+  }
+
+  return {
+    message: String(error || "Unknown error"),
+  };
+}
+
 async function buildIndicators(symbol, currentPrice, currentPctChange, source) {
   const { rows } = await pool.query(
     `
@@ -1006,7 +1029,8 @@ app.get("/api/health", async (_req, res) => {
     await pool.query("SELECT 1");
     res.json({ status: "ok" });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    const details = getErrorDetails(error);
+    res.status(500).json({ status: "error", ...details });
   }
 });
 
@@ -1028,7 +1052,8 @@ app.get("/api/search", async (req, res) => {
       .slice(0, 12);
     res.json({ query, results });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    const details = getErrorDetails(error);
+    res.status(500).json(details);
   }
 });
 
@@ -1039,7 +1064,8 @@ app.post("/api/refresh-live", async (req, res) => {
     const results = await refreshLiveData(symbols);
     res.json({ status: "ok", results });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    const details = getErrorDetails(error);
+    res.status(500).json(details);
   }
 });
 
@@ -1119,8 +1145,9 @@ app.get("/api/dashboard", async (req, res) => {
 
     res.json({ overview, history, predictions, ranking, alerts, marketSummary });
   } catch (error) {
-    console.error("Dashboard Error:", error);
-    res.status(500).json({ message: error.message });
+    const details = getErrorDetails(error);
+    console.error("Dashboard Error:", details);
+    res.status(500).json(details);
   }
 });
 
@@ -1134,7 +1161,8 @@ app.get("/api/live/:symbol", async (req, res) => {
 
     res.json(quote);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    const details = getErrorDetails(error);
+    res.status(500).json(details);
   }
 });
 
@@ -1159,7 +1187,8 @@ app.get("/api/stocks/:symbol", async (req, res) => {
 
     res.json(rows.reverse());
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    const details = getErrorDetails(error);
+    res.status(500).json(details);
   }
 });
 
