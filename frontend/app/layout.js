@@ -8,8 +8,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <footer className="site-footer">
+          Copyright (c) Made by Prateek Rasalkar. Deployed on 15/04/2026.
+        </footer>
+      </body>
     </html>
   );
 }
-
