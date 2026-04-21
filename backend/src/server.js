@@ -1043,15 +1043,23 @@ app.post("/api/refresh-live", async (req, res) => {
   }
 });
 
-app.get("/api/dashboard", async (_req, res) => {
+app.get("/api/dashboard", async (req, res) => {
   try {
-    const requestedSymbols = parseSymbolsParam(_req.query.symbols);
+    const requestedSymbols = parseSymbolsParam(req.query.symbols);
+
     if (requestedSymbols.length === 0) {
-      res.json({ overview: [], history: [], predictions: {} });
-      return;
+      return res.json({ overview: [], history: [], predictions: {} });
     }
 
-    await refreshLiveData(requestedSymbols);
+    const refreshResults = await refreshLiveData(requestedSymbols);
+    const successful = refreshResults.filter((result) => result.status === "saved");
+
+    if (successful.length === 0) {
+      return res.status(500).json({
+        message: "Live data fetched but NOT stored in DB",
+        debug: refreshResults,
+      });
+    }
 
     const { rows: latestBySymbol } = await pool.query(
       `
@@ -1063,6 +1071,13 @@ app.get("/api/dashboard", async (_req, res) => {
     `,
       [requestedSymbols]
     );
+
+    if (latestBySymbol.length === 0) {
+      return res.status(500).json({
+        message: "No data found in DB after refresh",
+        hint: "Check DB insertion logic",
+      });
+    }
 
     const overviewWithAnalytics = await Promise.all(
       latestBySymbol.map(async (row) => {
@@ -1101,8 +1116,10 @@ app.get("/api/dashboard", async (_req, res) => {
     const alerts = buildAlerts(overview);
     const marketSummary = buildMarketSummary(overview, ranking, alerts);
     const predictions = Object.fromEntries(predictionResponses);
+
     res.json({ overview, history, predictions, ranking, alerts, marketSummary });
   } catch (error) {
+    console.error("Dashboard Error:", error);
     res.status(500).json({ message: error.message });
   }
 });
