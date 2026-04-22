@@ -4,7 +4,7 @@ export const metadata = {
   title: "Stock Market Analytics Dashboard",
   description: "Real-time stock trend monitoring and prediction dashboard",
   icons: {
-    icon: "/logo.png",
+    icon: "/logo.jpg",
   },
 };
 
