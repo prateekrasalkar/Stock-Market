@@ -2,7 +2,10 @@ import "./globals.css";
 
 export const metadata = {
   title: "Stock Market Analytics Dashboard",
-  description: "Real-time stock trend monitoring and prediction dashboard"
+  description: "Real-time stock trend monitoring and prediction dashboard",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {
